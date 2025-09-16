@@ -10,7 +10,7 @@
 
 DEFINE_string(bag_path, "./dataset/sad/2dmapping/test_2d_lidar.bag", "数据包路径");
 
-/// 测试从rosbag中读取2d scan并plot的结果
+/// 测试从rosbag中读取2d scan并plot的结果，属于去ros化，虽然依赖于rosbag，但是通过IO读入
 
 int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
