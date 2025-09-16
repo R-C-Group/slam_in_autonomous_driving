@@ -43,34 +43,31 @@ SLAM目的就是优化求解相机的这个最佳的位姿T（变换矩阵），
 ## 反对称矩阵 （skew symmetric matrix）
 
 反对称矩阵其实是将三维向量和三维矩阵建立对应关系。它是这样定义的：如果一个3 X 3的矩阵A满足如下式子,那么A就是反对称矩阵。
+<div align="center">
+  <img src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190203.png" width="30%" />
+<figcaption>  
+</figcaption>
+</div>
 
-<figure style="text-align: center;">
-  <div style="margin-bottom: 10px;">
-    <img style="width: 30%;" src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190203.png" alt="Image description">
-  </div>
-<figcaption>
-</figcaption>
-</figure> 
+
 反对称矩阵对角线元素都为0。形如下公式：
-<figure style="text-align: center;">
-  <div style="margin-bottom: 10px;">
-    <img style="width: 30%;" src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190337.png" alt="Image description">
-  </div>
-<figcaption>
+<div align="center">
+  <img src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190337.png" width="30%" />
+<figcaption>  
 </figcaption>
-</figure> 
+</div>
 
 因此可以定义一个三维向量，用一个上三角符号来表示这个向量α和反对称矩阵A的对应关系。进而实现了向量和矩阵的对应关系
 
 ## 指数映射
 对于下公式。向量φ=（φ1，φ2，φ3）反应了R的导数性质，故称它在SO(3)上的原点 φ0 附近的正切空间上。这个φ正是李群大SO(3)对应的李代数小so(3)。
-<figure style="text-align: center;">
-<div style="margin-bottom: 10px;">
-  <img style="width: 30%;" src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190755.png" alt="Image description">
-</div>
-<figcaption>指数映射
+<div align="center">
+  <img src="https://kwanwaipang.github.io/SLAM_DEMO/SLAM_Introduction/微信截图_20240810190755.png" width="30%" />
+<figcaption> 
+指数映射 
 </figcaption>
-</figure> 
+</div>
+
 李代数小so(3)是三维向量φ的集合，每个向量φi的反对称矩阵都可以表达李群(大SO(3))上旋转矩阵R的导数，而R和φ是一个指数映射关系。也就是说，李群空间的任意一个旋转矩阵R都可以用李代数空间的一个向量的反对称矩阵指数来近似。
 
 而李代数是由向量组成的，向量对加法运算是封闭的。
