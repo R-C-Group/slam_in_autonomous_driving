@@ -15,6 +15,7 @@ namespace sad {
 /**
  * 第六章谈到的各种类型的ICP代码实现
  * 用法：先SetTarget, 此时构建target点云的KD树；再SetSource，然后调用Align*方法
+ * 高斯-牛顿法实现点到点2D ICP
  */
 class Icp2d {
    public:
@@ -32,7 +33,7 @@ class Icp2d {
     void SetSource(Scan2d::Ptr source) { source_scan_ = source; }
 
     /// 使用高斯牛顿法进行配准
-    bool AlignGaussNewton(SE2& init_pose);
+    bool AlignGaussNewton(SE2& init_pose);//实现了基于高斯牛顿法的点到点2D ICP
 
     /// 使用高斯牛顿法进行配准, Point-to-Plane
     bool AlignGaussNewtonPoint2Plane(SE2& init_pose);
@@ -44,6 +45,7 @@ class Icp2d {
     pcl::search::KdTree<Point2d> kdtree_;
     Cloud2d::Ptr target_cloud_;  // PCL 形式的target cloud
 
+    // 两个激光束
     Scan2d::Ptr target_scan_ = nullptr;
     Scan2d::Ptr source_scan_ = nullptr;
 };

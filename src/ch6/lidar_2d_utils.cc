@@ -7,6 +7,7 @@
 
 namespace sad {
 
+// 可视化2D激光
 void Visualize2DScan(Scan2d::Ptr scan, const SE2& pose, cv::Mat& image, const Vec3b& color, int image_size,
                      float resolution, const SE2& pose_submap) {
     if (image.data == nullptr) {

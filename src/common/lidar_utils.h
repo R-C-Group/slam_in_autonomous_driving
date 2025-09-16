@@ -24,7 +24,7 @@ using PacketsMsg = velodyne_msgs::VelodyneScan;
 using PacketsMsgPtr = boost::shared_ptr<PacketsMsg>;
 
 namespace sad {
-
+// 定义了激光束数据类型及变量
 inline Scan2d::Ptr MultiToScan2d(MultiScan2d::Ptr mscan) {
     Scan2d::Ptr scan(new Scan2d);
     scan->header = mscan->header;

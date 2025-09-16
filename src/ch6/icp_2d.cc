@@ -11,8 +11,9 @@
 
 namespace sad {
 
+// 实现了基于高斯牛顿法的点到点2D ICP
 bool Icp2d::AlignGaussNewton(SE2& init_pose) {
-    int iterations = 10;
+    int iterations = 10;//高斯牛顿迭代次数
     double cost = 0, lastCost = 0;
     SE2 current_pose = init_pose;
     const float max_dis2 = 0.01;    // 最近邻时的最远距离（平方）
@@ -25,14 +26,14 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
 
         int effective_num = 0;  // 有效点数
 
-        // 遍历source
+        // 遍历source的每个点
         for (size_t i = 0; i < source_scan_->ranges.size(); ++i) {
-            float r = source_scan_->ranges[i];
+            float r = source_scan_->ranges[i];//获取当前激光束的距离（极坐标系下）
             if (r < source_scan_->range_min || r > source_scan_->range_max) {
                 continue;
             }
 
-            float angle = source_scan_->angle_min + i * source_scan_->angle_increment;
+            float angle = source_scan_->angle_min + i * source_scan_->angle_increment;//当前激光束的角度=初始角度+第i个激光点*角度增益
             float theta = current_pose.so2().log();
             Vec2d pw = current_pose * Vec2d(r * std::cos(angle), r * std::sin(angle));
             Point2d pt;
