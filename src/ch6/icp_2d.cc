@@ -34,27 +34,27 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
             }
 
             float angle = source_scan_->angle_min + i * source_scan_->angle_increment;//当前激光束的角度=初始角度+第i个激光点*角度增益
-            float theta = current_pose.so2().log();
-            Vec2d pw = current_pose * Vec2d(r * std::cos(angle), r * std::sin(angle));
-            Point2d pt;
+            float theta = current_pose.so2().log();//此外当前机器人的航向角
+            Vec2d pw = current_pose * Vec2d(r * std::cos(angle), r * std::sin(angle));//获取点在body frame下的位置
+            Point2d pt;//Vec2d--->Point2d格式的转换
             pt.x = pw.x();
             pt.y = pw.y();
 
             // 最近邻
-            std::vector<int> nn_idx;
+            std::vector<int> nn_idx;//搜到的最邻近点的索引
             std::vector<float> dis;
-            kdtree_.nearestKSearch(pt, 1, nn_idx, dis);
-
-            if (nn_idx.size() > 0 && dis[0] < max_dis2) {
+            kdtree_.nearestKSearch(pt, 1, nn_idx, dis);//kd tree寻找最邻近（nn_idx按距离从大到小排列）
+            
+            if (nn_idx.size() > 0 && dis[0] < max_dis2) {//对于搜到的最邻近点的索引，并且最近邻时的最远距离少于阈值
                 effective_num++;
                 Mat32d J;
-                J << 1, 0, 0, 1, -r * std::sin(angle + theta), r * std::cos(angle + theta);
-                H += J * J.transpose();
+                J << 1, 0, 0, 1, -r * std::sin(angle + theta), r * std::cos(angle + theta);//对应第六章的公式6.9
+                H += J * J.transpose();//计算H矩阵
 
-                Vec2d e(pt.x - target_cloud_->points[nn_idx[0]].x, pt.y - target_cloud_->points[nn_idx[0]].y);
-                b += -J * e;
+                Vec2d e(pt.x - target_cloud_->points[nn_idx[0]].x, pt.y - target_cloud_->points[nn_idx[0]].y);//计算误差
+                b += -J * e;//计算b矩阵
 
-                cost += e.dot(e);
+                cost += e.dot(e);//误差的平方就是cost
             }
         }
 
