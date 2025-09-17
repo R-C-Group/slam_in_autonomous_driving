@@ -15,9 +15,9 @@ namespace sad {
 bool Icp2d::AlignGaussNewton(SE2& init_pose) {
     int iterations = 10;//高斯牛顿迭代次数
     double cost = 0, lastCost = 0;
-    SE2 current_pose = init_pose;
+    SE2 current_pose = init_pose;//初始的位置（机器人的pose）
     const float max_dis2 = 0.01;    // 最近邻时的最远距离（平方）
-    const int min_effect_pts = 20;  // 最小有效点数
+    const int min_effect_pts = 20;  // 最少的有效点数
 
     for (int iter = 0; iter < iterations; ++iter) {
         Mat3d H = Mat3d::Zero();
@@ -34,7 +34,7 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
             }
 
             float angle = source_scan_->angle_min + i * source_scan_->angle_increment;//当前激光束的角度=初始角度+第i个激光点*角度增益
-            float theta = current_pose.so2().log();//此外当前机器人的航向角
+            float theta = current_pose.so2().log();//此外当前机器人的航向角（so2应该只是选择其旋转部分，log即从李群转为李代数）
             Vec2d pw = current_pose * Vec2d(r * std::cos(angle), r * std::sin(angle));//获取点在body frame下的位置
             Point2d pt;//Vec2d--->Point2d格式的转换
             pt.x = pw.x();
@@ -48,39 +48,41 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
             if (nn_idx.size() > 0 && dis[0] < max_dis2) {//对于搜到的最邻近点的索引，并且最近邻时的最远距离少于阈值
                 effective_num++;
                 Mat32d J;
-                J << 1, 0, 0, 1, -r * std::sin(angle + theta), r * std::cos(angle + theta);//对应第六章的公式6.9
+                J << 1, 0, 0, 1, -r * std::sin(angle + theta), r * std::cos(angle + theta);//对应第六章的公式6.9，计算雅可比矩阵。
                 H += J * J.transpose();//计算H矩阵
 
-                Vec2d e(pt.x - target_cloud_->points[nn_idx[0]].x, pt.y - target_cloud_->points[nn_idx[0]].y);//计算误差
+                Vec2d e(pt.x - target_cloud_->points[nn_idx[0]].x, pt.y - target_cloud_->points[nn_idx[0]].y);//计算两个点之间的误差
                 b += -J * e;//计算b矩阵
 
-                cost += e.dot(e);//误差的平方就是cost
+                cost += e.dot(e);//误差的平方就是cost（欧氏距离）
             }
         }
 
-        if (effective_num < min_effect_pts) {
+        if (effective_num < min_effect_pts) {//有效的点不能少于这个数，所谓的有效点其实就是：少于阈值的最近邻时点数
             return false;
         }
 
-        // solve for dx
+        // solve for dx，奇异值分解求解最下二乘法
         Vec3d dx = H.ldlt().solve(b);
-        if (isnan(dx[0])) {
+        if (isnan(dx[0])) {//求解有nan值，就是失效
             break;
         }
 
-        cost /= effective_num;
-        if (iter > 0 && cost >= lastCost) {
+        cost /= effective_num;//求出平均的loss
+        if (iter > 0 && cost >= lastCost) {//如果当前的cost比lastCost更大，那么就是上一个收敛了，就break
             break;
         }
 
         LOG(INFO) << "iter " << iter << " cost = " << cost << ", effect num: " << effective_num;
 
+        // 高斯牛顿迭代。x=x+dx
         current_pose.translation() += dx.head<2>();
-        current_pose.so2() = current_pose.so2() * SO2::exp(dx[2]);
+        current_pose.so2() = current_pose.so2() * SO2::exp(dx[2]);//（so2应该只是选择其旋转部分，exp即从李代数转为李群）
         lastCost = cost;
     }
 
-    init_pose = current_pose;
+    // 迭代完后，
+    init_pose = current_pose;//将位置更新
     LOG(INFO) << "estimated pose: " << current_pose.translation().transpose()
               << ", theta: " << current_pose.so2().log();
 
