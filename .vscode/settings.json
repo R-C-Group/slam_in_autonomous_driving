@@ -3,5 +3,10 @@
         "functional": "cpp",
         "cmath": "cpp",
         "complex": "cpp"
-    }
+    },
+    "python.autoComplete.extraPaths": [
+        "/home/kwanwaipang/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/kwanwaipang/kalibr_workspace/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 }

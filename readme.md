@@ -3,6 +3,39 @@
 </div>
 
 
+# 安装与配置
+
+## 编译
+
+```sh
+#依赖库
+sudo apt install -y ros-noetic-pcl-ros ros-noetic-velodyne-msgs libopencv-dev libgoogle-glog-dev libeigen3-dev libsuitesparse-dev libpcl-dev libyaml-cpp-dev libbtbb-dev libgmock-dev
+
+#编译安装thirdparty/pangolin.zip
+#编译thirdparty/g2o：最后加sudo make install
+
+mkdir build
+cd build
+cmake ..
+make -j8
+```
+
+* 下载数据集：百度云链接: https://pan.baidu.com/s/1ELOcF1UTKdfiKBAaXnE8sQ?pwd=feky 提取码: feky
+* 数据路径放在文件夹`data`中
+
+## 运行
+
+* 编译后各章的可执行文件位于`bin`目录下
+
+```sh
+#到主目录下
+
+#测试icp匹配
+/bin/test_2d_icp_s2s --bag_path ~/datast/2dmapping/floor1.bag --method point2point
+
+```
+
+
 # 基础知识mark
 
 ## 坐标系定义
