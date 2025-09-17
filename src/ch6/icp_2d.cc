@@ -16,7 +16,7 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
     int iterations = 10;//高斯牛顿迭代次数
     double cost = 0, lastCost = 0;
     SE2 current_pose = init_pose;//初始的位置（机器人的pose）
-    const float max_dis2 = 0.01;    // 最近邻时的最远距离（平方）
+    const float max_dis2 = 0.01;    // 最近邻时的最远距离（平方）--->最邻近点的最大平方距离
     const int min_effect_pts = 20;  // 最少的有效点数
 
     for (int iter = 0; iter < iterations; ++iter) {
@@ -43,7 +43,7 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
             // 最近邻
             std::vector<int> nn_idx;//搜到的最邻近点的索引
             std::vector<float> dis;
-            kdtree_.nearestKSearch(pt, 1, nn_idx, dis);//kd tree寻找最邻近（nn_idx按距离从大到小排列）
+            kdtree_.nearestKSearch(pt, 1, nn_idx, dis);//kd tree寻找最邻近，用的应该也是pcl的库。注意此处自搜了最邻近的一个点
             
             if (nn_idx.size() > 0 && dis[0] < max_dis2) {//对于搜到的最邻近点的索引，并且最近邻时的最远距离少于阈值
                 effective_num++;
@@ -89,6 +89,7 @@ bool Icp2d::AlignGaussNewton(SE2& init_pose) {
     return true;
 }
 
+// 点到面的ICP（2D情况下算是点到线的ICP）
 bool Icp2d::AlignGaussNewtonPoint2Plane(SE2& init_pose) {
     int iterations = 10;
     double cost = 0, lastCost = 0;
@@ -117,12 +118,12 @@ bool Icp2d::AlignGaussNewtonPoint2Plane(SE2& init_pose) {
             pt.x = pw.x();
             pt.y = pw.y();
 
-            // 查找5个最近邻
+            // 查找5个最近邻（点到点查找的为1个最邻近，此处为5个）
             std::vector<int> nn_idx;
             std::vector<float> dis;
             kdtree_.nearestKSearch(pt, 5, nn_idx, dis);
 
-            std::vector<Vec2d> effective_pts;  // 有效点
+            std::vector<Vec2d> effective_pts;  // 有效点（5个最邻近点中的有效点）
             for (int j = 0; j < nn_idx.size(); ++j) {
                 if (dis[j] < max_dis) {
                     effective_pts.emplace_back(
@@ -130,15 +131,15 @@ bool Icp2d::AlignGaussNewtonPoint2Plane(SE2& init_pose) {
                 }
             }
 
-            if (effective_pts.size() < 3) {
+            if (effective_pts.size() < 3) {//弱有效点少于3个，则不执行
                 continue;
             }
 
             // 拟合直线，组装J、H和误差
             Vec3d line_coeffs;
-            if (math::FitLine2D(effective_pts, line_coeffs)) {
+            if (math::FitLine2D(effective_pts, line_coeffs)) {//将搜到的k个邻近点拟合成直线
                 effective_num++;
-                Vec3d J;
+                Vec3d J;//雅可比矩阵的求解请见第六章的公式6.17
                 J << line_coeffs[0], line_coeffs[1],
                     -line_coeffs[0] * r * std::sin(angle + theta) + line_coeffs[1] * r * std::cos(angle + theta);
                 H += J * J.transpose();
@@ -179,6 +180,7 @@ bool Icp2d::AlignGaussNewtonPoint2Plane(SE2& init_pose) {
     return true;
 }
 
+//对于输入的点云构建kdTree
 void Icp2d::BuildTargetKdTree() {
     if (target_scan_ == nullptr) {
         LOG(ERROR) << "target is not set";
@@ -186,14 +188,14 @@ void Icp2d::BuildTargetKdTree() {
     }
 
     target_cloud_.reset(new Cloud2d);
-    for (size_t i = 0; i < target_scan_->ranges.size(); ++i) {
+    for (size_t i = 0; i < target_scan_->ranges.size(); ++i) {//对于每个点
         if (target_scan_->ranges[i] < target_scan_->range_min || target_scan_->ranges[i] > target_scan_->range_max) {
             continue;
         }
 
-        double real_angle = target_scan_->angle_min + i * target_scan_->angle_increment;
+        double real_angle = target_scan_->angle_min + i * target_scan_->angle_increment;//获得角度信息
 
-        Point2d p;
+        Point2d p;//获得点云的xy信息
         p.x = target_scan_->ranges[i] * std::cos(real_angle);
         p.y = target_scan_->ranges[i] * std::sin(real_angle);
         target_cloud_->points.push_back(p);
@@ -201,7 +203,7 @@ void Icp2d::BuildTargetKdTree() {
 
     target_cloud_->width = target_cloud_->points.size();
     target_cloud_->is_dense = false;
-    kdtree_.setInputCloud(target_cloud_);
+    kdtree_.setInputCloud(target_cloud_);//此处应该用的是PCL的库来构建kdTree
 }
 
 }  // namespace sad

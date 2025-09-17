@@ -24,7 +24,7 @@ class Icp2d {
     Icp2d() {}
 
     /// 设置目标的Scan
-    void SetTarget(Scan2d::Ptr target) {
+    void SetTarget(Scan2d::Ptr target) {//对于输入的点云，构建kdTree
         target_scan_ = target;
         BuildTargetKdTree();
     }

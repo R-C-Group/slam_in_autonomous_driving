@@ -164,18 +164,19 @@ bool FitLine(std::vector<Eigen::Matrix<S, 3, 1>>& data, Eigen::Matrix<S, 3, 1>& 
 
 template <typename S>
 bool FitLine2D(const std::vector<Eigen::Matrix<S, 2, 1>>& data, Eigen::Matrix<S, 3, 1>& coeffs) {
+    // 对于直线拟合，只需要将各点的坐标排列成矩阵，然后求矩阵A的最小奇异值向量
     if (data.size() < 2) {
         return false;
     }
 
     Eigen::MatrixXd A(data.size(), 3);
     for (int i = 0; i < data.size(); ++i) {
-        A.row(i).head<2>() = data[i].transpose();
-        A.row(i)[2] = 1.0;
+        A.row(i).head<2>() = data[i].transpose();//每个的点的坐标xy插入矩阵A中
+        A.row(i)[2] = 1.0;//第三个(第三列)元素为1
     }
 
     Eigen::JacobiSVD svd(A, Eigen::ComputeThinV);
-    coeffs = svd.matrixV().col(2);
+    coeffs = svd.matrixV().col(2);//SVD奇异值的最小向量
     return true;
 }
 

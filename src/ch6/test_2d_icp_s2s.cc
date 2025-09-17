@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
                              if (last_scan == nullptr) {
                                  last_scan = current_scan;
-                                 return true;
+                                 return true;//返回为true，下面就不执行了
                              }
 
                              sad::Icp2d icp;
@@ -39,20 +39,21 @@ int main(int argc, char** argv) {
                              icp.SetSource(current_scan);
 
                              SE2 pose;
+                            //  选择采用点到点匹配还是点到面匹配
                              if (fLS::FLAGS_method == "point2point") {
                                  icp.AlignGaussNewton(pose);
                              } else if (fLS::FLAGS_method == "point2plane") {
                                  icp.AlignGaussNewtonPoint2Plane(pose);
                              }
 
-                             cv::Mat image;
+                             cv::Mat image;//两个画到同一张image上
                              sad::Visualize2DScan(last_scan, SE2(), image, Vec3b(255, 0, 0));    // target是蓝的
                              sad::Visualize2DScan(current_scan, pose, image, Vec3b(0, 0, 255));  // source是红的
                              cv::imshow("scan", image);
                              cv::waitKey(20);
 
                              last_scan = current_scan;
-                             return true;
+                             return true;//返回为true，到执行下一轮
                          })
         .Go();
 
