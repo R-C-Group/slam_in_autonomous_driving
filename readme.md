@@ -31,7 +31,7 @@ make -j8
 #到主目录下
 
 #测试icp匹配
-/bin/test_2d_icp_s2s --bag_path ~/datast/2dmapping/floor1.bag --method point2point
+bin/test_2d_icp_s2s --bag_path ~/dataset/2dmapping/floor1.bag --method point2point
 
 ```
 
